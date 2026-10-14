@@ -50,8 +50,11 @@ button { cursor: pointer; }
 .app { padding: 8px 16px calc(110px + env(safe-area-inset-bottom, 0px)); }
 h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin: 24px 0 12px; letter-spacing: -0.01em; }
 
-.item { display: grid; grid-template-columns: 112px 1fr; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
-.item .ill { width: 112px; height: 100%; min-height: 112px; object-fit: cover; display: block; }
+.item { display: grid; grid-template-columns: 128px 1fr; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
+.thumb { background: var(--tint); display: flex; align-items: center; justify-content: center; }
+.thumb .ill { width: 100%; height: auto; display: block; }
+.thumb.photo { align-items: stretch; }
+.thumb.photo .ill { height: 100%; object-fit: cover; }
 .item .body { padding: 12px 12px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .item .name { font-family: var(--font-display); font-weight: 600; font-size: 17px; line-height: 1.2; }
 .item .desc { color: var(--muted); font-size: 14px; }
@@ -144,7 +147,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin
 
   var KEY = "chez-tifou-client-v1";
   var cart = {};
-  var ui = { view: "menu", pay: "especes", error: "", sent: null };
+  var ui = { view: "menu", pay: "especes", mode: "livraison", error: "", sent: null };
   var cust = { nom: "", tel: "", adresse: "", ref: "" };
   try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) { cust.nom = saved.nom || ""; cust.tel = saved.tel || ""; cust.adresse = saved.adresse || ""; } } catch (e) {}
   function saveCust() { try { localStorage.setItem(KEY, JSON.stringify({ nom: cust.nom, tel: cust.tel, adresse: cust.adresse })); } catch (e) {} }
@@ -157,10 +160,11 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin
 
   /* ===== Illustration du plat (utilisée tant qu'il n'y a pas de photo) ===== */
   function ill(m) {
-    if (m.photo) return '<img class="ill" src="' + esc(m.photo) + '" alt="' + esc(m.nom) + '">';
+    if (m.photo) return '<div class="thumb photo"><img class="ill" src="' + esc(m.photo) + '" alt="' + esc(m.nom) + '"></div>';
     var fr = /frites/i.test(m.nom), dr = /boisson/i.test(m.nom);
     var sx = fr && dr ? 2 : fr ? 24 : dr ? 34 : 56;
-    var s = '<svg class="ill" viewBox="0 0 240 150" role="img" aria-label="Illustration : ' + esc(m.nom) + '" preserveAspectRatio="xMidYMid slice"><rect width="240" height="150" fill="var(--tint)"/>';
+    var minX = sx + 4 - 8, endX = fr && dr ? sx + 220 : fr ? sx + 174 : dr ? sx + 154 : sx + 110;
+    var s = '<div class="thumb"><svg class="ill" viewBox="' + minX + ' 40 ' + (endX + 8 - minX) + ' 106" role="img" aria-label="Illustration : ' + esc(m.nom) + '"><rect x="-200" y="-100" width="800" height="400" fill="var(--tint)"/>';
     s += '<g transform="translate(' + (sx + 10) + ' 26)">' +
       '<path d="M0 58 C0 20 100 20 100 58Z" fill="#E3A33A"/>' +
       '<circle cx="30" cy="40" r="2.6" fill="#F7DFA6"/><circle cx="52" cy="34" r="2.6" fill="#F7DFA6"/><circle cx="72" cy="42" r="2.6" fill="#F7DFA6"/>' +
@@ -175,7 +179,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin
     if (dr) {
       s += '<g transform="translate(' + x + ' 62)"><path d="M14 -16 L20 -2" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/><path d="M0 0 H34 L30 66 H4Z" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/><rect x="5" y="22" width="24" height="18" fill="var(--accent)"/></g>';
     }
-    return s + '</svg>';
+    return s + '</svg></div>';
   }
 
   /* ===== Écrans ===== */
@@ -199,20 +203,23 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin
     }
     h += '<div class="total"><span>Total</span><span>' + fcfa(total()) + '</span></div></div>';
 
-    h += '<h2>Livraison</h2>' +
+    h += '<h2>Réception</h2><div class="pay">' +
+      '<button class="opt" data-a="mode" data-p="livraison" aria-pressed="' + (ui.mode === "livraison") + '"><span class="dot"></span><span><b>Livraison</b><small>On vous livre à l\'adresse indiquée</small></span></button>' +
+      '<button class="opt" data-a="mode" data-p="emporter" aria-pressed="' + (ui.mode === "emporter") + '"><span class="dot"></span><span><b>À emporter</b><small>Vous venez chercher votre commande</small></span></button></div>';
+    h += '<h2>Vos informations</h2>' +
       '<label class="field"><span>Votre nom</span><input id="f-nom" type="text" autocomplete="name" value="' + esc(cust.nom) + '"></label>' +
       '<label class="field"><span>Votre téléphone</span><input id="f-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="ex. 90 00 00 00" value="' + esc(cust.tel) + '"></label>' +
-      '<label class="field"><span>Adresse de livraison</span><textarea id="f-adr" rows="2" placeholder="Quartier, rue, repère connu">' + esc(cust.adresse) + '</textarea></label>';
+      (ui.mode === "livraison" ? '<label class="field"><span>Adresse de livraison</span><textarea id="f-adr" rows="2" placeholder="Quartier, rue, repère connu">' + esc(cust.adresse) + '</textarea></label>' : "");
 
     h += '<h2>Paiement</h2><div class="pay">' +
       '<button class="opt" data-a="pay" data-p="momo" aria-pressed="' + (ui.pay === "momo") + '"><span class="dot"></span><span><b>Mobile money</b><small>Airtel Money, Moov Money ou MyNita</small></span></button>' +
-      '<button class="opt" data-a="pay" data-p="especes" aria-pressed="' + (ui.pay === "especes") + '"><span class="dot"></span><span><b>Espèces à la livraison</b><small>Vous payez au livreur</small></span></button></div>';
+      '<button class="opt" data-a="pay" data-p="especes" aria-pressed="' + (ui.pay === "especes") + '"><span class="dot"></span><span><b>' + (ui.mode === "livraison" ? "Espèces à la livraison" : "Espèces au retrait") + '</b><small>' + (ui.mode === "livraison" ? "Vous payez au livreur" : "Vous payez en venant chercher") + '</small></span></button></div>';
 
     if (ui.pay === "momo") {
       var num = CONFIG.paiementNumero ? esc(CONFIG.paiementNumero) : "(numéro à renseigner)";
       h += '<div class="momo"><p>Envoyez <b>' + fcfa(total()) + '</b> au numéro :</p><div class="num"><span>' + num + '</span>' +
         (CONFIG.paiementNumero ? '<button class="copy" data-a="copy">Copier</button>' : '') + '</div></div>' +
-        '<label class="field"><span>Référence de la transaction (dans le SMS reçu)</span><input id="f-ref" type="text" autocomplete="off" value="' + esc(cust.ref) + '"></label>';
+        '<label class="field"><span>Référence de la transaction (facultatif)</span><input id="f-ref" type="text" autocomplete="off" value="' + esc(cust.ref) + '"></label><p style="color:var(--muted);font-size:14px;margin:0 0 12px">Elle aide le restaurant à retrouver votre paiement. Vous la trouvez dans le SMS reçu.</p>';
     }
 
     h += '<p class="error" id="err" role="alert">' + esc(ui.error) + '</p>' +
@@ -223,8 +230,9 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin
   function summaryText(o) {
     var t = "Nouvelle commande " + CONFIG.nom + " (" + o.code + ")\n\n";
     o.lignes.forEach(function (l) { t += l.qte + " x " + l.nom + " = " + fcfa(l.qte * l.prix) + "\n"; });
-    t += "\nTotal : " + fcfa(o.total) + "\n\nNom : " + o.nom + "\nTéléphone : " + o.tel + "\nAdresse : " + o.adresse + "\n";
-    t += o.paiement === "momo" ? "Paiement : mobile money (réf. " + o.ref + ")" : "Paiement : espèces à la livraison";
+    t += "\nTotal : " + fcfa(o.total) + "\n\nNom : " + o.nom + "\nTéléphone : " + o.tel + "\n";
+    t += o.mode === "livraison" ? "Livraison à : " + o.adresse + "\n" : "À emporter (le client vient chercher)\n";
+    t += o.paiement === "momo" ? "Paiement : mobile money" + (o.ref ? " (réf. " + o.ref + ")" : " (référence non indiquée)") : (o.mode === "livraison" ? "Paiement : espèces à la livraison" : "Paiement : espèces au retrait");
     return t;
   }
   function waLink(o) { return "https://wa.me/" + CONFIG.telResto + "?text=" + encodeURIComponent(summaryText(o)); }
@@ -263,6 +271,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin
     if (a === "open") { ui.view = "order"; ui.error = ""; render(); window.scrollTo(0, 0); return; }
     if (a === "back") { ui.view = "menu"; render(); window.scrollTo(0, 0); return; }
     if (a === "pay") { ui.pay = t.getAttribute("data-p"); ui.error = ""; render(); window.scrollTo(0, y); return; }
+    if (a === "mode") { ui.mode = t.getAttribute("data-p"); ui.error = ""; render(); window.scrollTo(0, y); return; }
     if (a === "copy") {
       try { navigator.clipboard.writeText(CONFIG.paiementNumero.replace(/\s/g, "")); t.textContent = "Copié"; } catch (err) { t.textContent = "Copiez à la main"; }
       return;
@@ -272,12 +281,11 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin
       var err = "";
       if (cust.nom.trim().length < 2) err = "Entrez votre nom.";
       else if (cust.tel.replace(/\D/g, "").length < 8) err = "Entrez un numéro de téléphone valide (8 chiffres).";
-      else if (cust.adresse.trim().length < 3) err = "Entrez votre adresse de livraison.";
-      else if (ui.pay === "momo" && cust.ref.trim().length < 4) err = "Entrez la référence de la transaction reçue par SMS.";
+      else if (ui.mode === "livraison" && cust.adresse.trim().length < 3) err = "Entrez votre adresse de livraison.";
       if (err) { ui.error = err; render(); window.scrollTo(0, y); return; }
       var lignes = [];
       for (var k in cart) { var m = find(k); if (m) lignes.push({ id: m.id, nom: m.nom, qte: cart[k], prix: m.prix }); }
-      var o = { code: "CT-" + String(Date.now()).slice(-5), lignes: lignes, total: total(), nom: cust.nom.trim(), tel: cust.tel.trim(), adresse: cust.adresse.trim(), paiement: ui.pay, ref: ui.pay === "momo" ? cust.ref.trim() : "", date: new Date().toISOString() };
+      var o = { code: "CT-" + String(Date.now()).slice(-5), lignes: lignes, total: total(), nom: cust.nom.trim(), tel: cust.tel.trim(), mode: ui.mode, adresse: ui.mode === "livraison" ? cust.adresse.trim() : "", paiement: ui.pay, ref: ui.pay === "momo" ? cust.ref.trim() : "", date: new Date().toISOString() };
       saveCust();
       if (CONFIG.webhookUrl) {
         try { fetch(CONFIG.webhookUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(o) }); } catch (e2) {}
