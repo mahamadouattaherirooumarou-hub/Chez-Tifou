@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chez Tifou – Commander</title>
+<meta name="theme-color" content="#F2B33D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F5F2; --surface: #FFFFFF; --ink: #1D1B18; --muted: #6A655D; --line: #E0DDD6;
+  --accent: #D2381B; --accent-ink: #FFFFFF; --band: #F2B33D; --band-ink: #1D1B18;
+  --tint: #FBE3B8; --ok: #1E7A4F; --ok-bg: #DCEFE5; --warn-bg: #FFF1D6;
+  --font-display: "Bricolage Grotesque", "Arial Black", Arial, sans-serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14120F; --surface: #201D19; --ink: #F4F1EA; --muted: #A8A196; --line: #34302A;
+    --accent: #EF5A3C; --band: #F2B33D; --band-ink: #1D1B18; --tint: #3B2F1A;
+    --ok: #5FD39A; --ok-bg: #1B3328; --warn-bg: #3A2F14;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14120F; --surface: #201D19; --ink: #F4F1EA; --muted: #A8A196; --line: #34302A;
+  --accent: #EF5A3C; --band: #F2B33D; --band-ink: #1D1B18; --tint: #3B2F1A;
+  --ok: #5FD39A; --ok-bg: #1B3328; --warn-bg: #3A2F14;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.band { background: var(--band); color: var(--band-ink); padding: 22px 16px 20px; }
+.band .in, .app { max-width: 520px; margin: 0 auto; }
+.band h1 { font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 1; margin: 0; letter-spacing: -0.02em; }
+.band p { margin: 6px 0 0; font-weight: 500; }
+.band .sub { font-size: 14px; margin-top: 10px; opacity: .85; }
+
+.app { padding: 8px 16px calc(110px + env(safe-area-inset-bottom, 0px)); }
+h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin: 24px 0 12px; letter-spacing: -0.01em; }
+
+.item { display: grid; grid-template-columns: 112px 1fr; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
+.item .ill { width: 112px; height: 100%; min-height: 112px; object-fit: cover; display: block; }
+.item .body { padding: 12px 12px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.item .name { font-family: var(--font-display); font-weight: 600; font-size: 17px; line-height: 1.2; }
+.item .desc { color: var(--muted); font-size: 14px; }
+.item .row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 6px; gap: 8px; }
+.price { font-weight: 600; }
+.add { border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-weight: 600; padding: 8px 14px; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; }
+.stepper button { width: 38px; height: 38px; border: 0; background: none; font-size: 20px; font-weight: 600; border-radius: 12px; }
+.stepper span { min-width: 24px; text-align: center; font-weight: 600; }
+
+.cartbar { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--bg) 70%, transparent); z-index: 10; }
+.cartbar .in { max-width: 520px; margin: 0 auto; }
+.btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 15px 18px; border-radius: 14px; border: 0; font-weight: 700; font-size: 16px; background: var(--accent); color: var(--accent-ink); text-decoration: none; }
+.btn.center { justify-content: center; }
+.btn.secondary { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+.btn:disabled { opacity: .5; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+.line { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.line:last-child { border-bottom: 0; }
+.line .l { min-width: 0; }
+.line .l b { display: block; font-weight: 600; }
+.line .l small { color: var(--muted); }
+.total { display: flex; justify-content: space-between; font-family: var(--font-display); font-weight: 800; font-size: 22px; padding-top: 12px; }
+
+.field { display: block; margin-bottom: 12px; }
+.field span { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.field input, .field textarea { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); font-size: 16px; }
+.field input:focus, .field textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+
+.pay { display: grid; gap: 8px; margin-bottom: 12px; }
+.opt { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); text-align: left; width: 100%; }
+.opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt .dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); flex: none; }
+.opt[aria-pressed="true"] .dot { border-color: var(--accent); background: radial-gradient(var(--accent) 45%, transparent 50%); }
+.opt b { display: block; font-weight: 600; }
+.opt small { color: var(--muted); }
+
+.momo { background: var(--warn-bg); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.momo p { margin: 0 0 8px; }
+.momo .num { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: var(--font-display); font-weight: 800; font-size: 24px; }
+.momo .copy { border: 1.5px solid var(--ink); background: transparent; border-radius: 10px; padding: 6px 12px; font-weight: 600; font-size: 14px; }
+.error { color: var(--accent); font-weight: 600; font-size: 14px; min-height: 20px; margin: 4px 0 8px; }
+.back { background: none; border: 0; padding: 12px 0 0; font-weight: 600; color: var(--muted); }
+
+.done { text-align: center; padding: 28px 16px; }
+.done .check { width: 64px; height: 64px; margin: 0 auto 12px; }
+.done .check circle { fill: var(--ok-bg); }
+.done .check path { fill: none; stroke: var(--ok); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw .5s .15s ease-out forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.done h2 { margin: 0 0 6px; }
+.done p { color: var(--muted); margin: 0 0 16px; }
+.done .stack { display: grid; gap: 10px; }
+.foot { color: var(--muted); font-size: 13px; text-align: center; margin-top: 28px; }
+@media (prefers-reduced-motion: reduce) { .done .check path { animation: none; stroke-dashoffset: 0; } }
+</style>
+</head>
+<body>
+
+<header class="band"><div class="in">
+  <h1 id="nom"></h1>
+  <p id="slogan"></p>
+  <p class="sub" id="infos"></p>
+</div></header>
+<main class="app" id="app"></main>
+<div class="cartbar" id="cartbar"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===== RÉGLAGES À MODIFIER ===== */
+  var CONFIG = {
+    nom: "Chez Tifou",
+    slogan: "la cuisine du chef !!",
+    adresse: "Poudrière sur le Goudron de l'ex Hôtel Sabka Lahia",
+    livraison: "Livraison partout à Niamey",
+    telResto: "22790121201",      // numéro WhatsApp du restaurant (indicatif pays inclus, sans +)
+    paiementNumero: "90 12 12 01", // numéro mobile money (MyNita) qui reçoit les paiements
+    webhookUrl: ""                // optionnel : lien d'un webhook Make qui enregistre la commande dans Airtable
+  };
+
+  /* ===== MENU (copié depuis la table MENU d'Airtable) ===== */
+  var MENU = [
+    { id: "recJHamDPJmtcnS6T", nom: "Sandwich Viande Hachée", desc: "Sandwich à la viande hachée, sans boisson", prix: 800, photo: "" },
+    { id: "recjXYzda0tkJzbav", nom: "Sandwich Viande Hachée + Boisson", desc: "Sandwich à la viande hachée avec boisson incluse", prix: 1200, photo: "" },
+    { id: "recArI7Kghn27Ym6u", nom: "Sandwich VH Frites", desc: "Sandwich viande hachée avec frites", prix: 1000, photo: "" },
+    { id: "recGEo8hVqrXm1mat", nom: "Sandwich VH Frites + Boisson", desc: "Sandwich viande hachée avec frites et boisson incluse", prix: 1500, photo: "" }
+  ];
+
+  var KEY = "chez-tifou-client-v1";
+  var cart = {};
+  var ui = { view: "menu", pay: "especes", error: "", sent: null };
+  var cust = { nom: "", tel: "", adresse: "", ref: "" };
+  try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) { cust.nom = saved.nom || ""; cust.tel = saved.tel || ""; cust.adresse = saved.adresse || ""; } } catch (e) {}
+  function saveCust() { try { localStorage.setItem(KEY, JSON.stringify({ nom: cust.nom, tel: cust.tel, adresse: cust.adresse })); } catch (e) {} }
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); }
+  function fcfa(n) { return (Number(n) || 0).toLocaleString("fr-FR") + " FCFA"; }
+  function find(id) { for (var i = 0; i < MENU.length; i++) if (MENU[i].id === id) return MENU[i]; return null; }
+  function count() { var n = 0; for (var k in cart) n += cart[k]; return n; }
+  function total() { var t = 0; for (var k in cart) { var m = find(k); if (m) t += m.prix * cart[k]; } return t; }
+
+  /* ===== Illustration du plat (utilisée tant qu'il n'y a pas de photo) ===== */
+  function ill(m) {
+    if (m.photo) return '<img class="ill" src="' + esc(m.photo) + '" alt="' + esc(m.nom) + '">';
+    var fr = /frites/i.test(m.nom), dr = /boisson/i.test(m.nom);
+    var sx = fr && dr ? 2 : fr ? 24 : dr ? 34 : 56;
+    var s = '<svg class="ill" viewBox="0 0 240 150" role="img" aria-label="Illustration : ' + esc(m.nom) + '" preserveAspectRatio="xMidYMid slice"><rect width="240" height="150" fill="var(--tint)"/>';
+    s += '<g transform="translate(' + (sx + 10) + ' 26)">' +
+      '<path d="M0 58 C0 20 100 20 100 58Z" fill="#E3A33A"/>' +
+      '<circle cx="30" cy="40" r="2.6" fill="#F7DFA6"/><circle cx="52" cy="34" r="2.6" fill="#F7DFA6"/><circle cx="72" cy="42" r="2.6" fill="#F7DFA6"/>' +
+      '<path d="M-4 58 q8 10 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 v6 h-104Z" fill="#5FA14B"/>' +
+      '<rect x="0" y="66" width="100" height="16" rx="8" fill="#6B3E26"/>' +
+      '<path d="M0 86 H100 C100 104 90 108 80 108 H20 C10 108 0 104 0 86Z" fill="#E3A33A"/></g>';
+    var x = sx + 10 + 110;
+    if (fr) {
+      s += '<g transform="translate(' + x + ' 54)"><g fill="#F6C945"><rect x="8" y="0" width="9" height="40" rx="3"/><rect x="20" y="-8" width="9" height="48" rx="3"/><rect x="32" y="2" width="9" height="38" rx="3"/><rect x="44" y="-4" width="9" height="44" rx="3"/></g><path d="M2 34 L8 82 H48 L54 34Z" fill="var(--accent)"/></g>';
+      x += 66;
+    }
+    if (dr) {
+      s += '<g transform="translate(' + x + ' 62)"><path d="M14 -16 L20 -2" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/><path d="M0 0 H34 L30 66 H4Z" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/><rect x="5" y="22" width="24" height="18" fill="var(--accent)"/></g>';
+    }
+    return s + '</svg>';
+  }
+
+  /* ===== Écrans ===== */
+  function viewMenu() {
+    var h = '<h2>Le menu</h2>';
+    MENU.forEach(function (m) {
+      var q = cart[m.id] || 0;
+      var ctl = q ? '<div class="stepper"><button data-a="minus" data-id="' + m.id + '" aria-label="Retirer un ' + esc(m.nom) + '">−</button><span aria-live="polite">' + q + '</span><button data-a="plus" data-id="' + m.id + '" aria-label="Ajouter un ' + esc(m.nom) + '">+</button></div>'
+                   : '<button class="add" data-a="plus" data-id="' + m.id + '">Ajouter</button>';
+      h += '<div class="item">' + ill(m) + '<div class="body"><div class="name">' + esc(m.nom) + '</div><div class="desc">' + esc(m.desc) + '</div><div class="row"><span class="price">' + fcfa(m.prix) + '</span>' + ctl + '</div></div></div>';
+    });
+    return h;
+  }
+
+  function viewOrder() {
+    var h = '<button class="back" data-a="back">‹ Retour au menu</button><h2 style="margin-top:8px">Ma commande</h2><div class="card">';
+    for (var k in cart) {
+      var m = find(k); if (!m) continue;
+      h += '<div class="line"><div class="l"><b>' + esc(m.nom) + '</b><small>' + fcfa(m.prix) + ' l\'unité</small></div>' +
+        '<div class="stepper"><button data-a="minus" data-id="' + k + '" aria-label="Retirer un ' + esc(m.nom) + '">−</button><span>' + cart[k] + '</span><button data-a="plus" data-id="' + k + '" aria-label="Ajouter un ' + esc(m.nom) + '">+</button></div></div>';
+    }
+    h += '<div class="total"><span>Total</span><span>' + fcfa(total()) + '</span></div></div>';
+
+    h += '<h2>Livraison</h2>' +
+      '<label class="field"><span>Votre nom</span><input id="f-nom" type="text" autocomplete="name" value="' + esc(cust.nom) + '"></label>' +
+      '<label class="field"><span>Votre téléphone</span><input id="f-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="ex. 90 00 00 00" value="' + esc(cust.tel) + '"></label>' +
+      '<label class="field"><span>Adresse de livraison</span><textarea id="f-adr" rows="2" placeholder="Quartier, rue, repère connu">' + esc(cust.adresse) + '</textarea></label>';
+
+    h += '<h2>Paiement</h2><div class="pay">' +
+      '<button class="opt" data-a="pay" data-p="momo" aria-pressed="' + (ui.pay === "momo") + '"><span class="dot"></span><span><b>Mobile money</b><small>Airtel Money, Moov Money ou MyNita</small></span></button>' +
+      '<button class="opt" data-a="pay" data-p="especes" aria-pressed="' + (ui.pay === "especes") + '"><span class="dot"></span><span><b>Espèces à la livraison</b><small>Vous payez au livreur</small></span></button></div>';
+
+    if (ui.pay === "momo") {
+      var num = CONFIG.paiementNumero ? esc(CONFIG.paiementNumero) : "(numéro à renseigner)";
+      h += '<div class="momo"><p>Envoyez <b>' + fcfa(total()) + '</b> au numéro :</p><div class="num"><span>' + num + '</span>' +
+        (CONFIG.paiementNumero ? '<button class="copy" data-a="copy">Copier</button>' : '') + '</div></div>' +
+        '<label class="field"><span>Référence de la transaction (dans le SMS reçu)</span><input id="f-ref" type="text" autocomplete="off" value="' + esc(cust.ref) + '"></label>';
+    }
+
+    h += '<p class="error" id="err" role="alert">' + esc(ui.error) + '</p>' +
+      '<button class="btn center" data-a="send">Envoyer la commande · ' + fcfa(total()) + '</button>';
+    return h;
+  }
+
+  function summaryText(o) {
+    var t = "Nouvelle commande " + CONFIG.nom + " (" + o.code + ")\n\n";
+    o.lignes.forEach(function (l) { t += l.qte + " x " + l.nom + " = " + fcfa(l.qte * l.prix) + "\n"; });
+    t += "\nTotal : " + fcfa(o.total) + "\n\nNom : " + o.nom + "\nTéléphone : " + o.tel + "\nAdresse : " + o.adresse + "\n";
+    t += o.paiement === "momo" ? "Paiement : mobile money (réf. " + o.ref + ")" : "Paiement : espèces à la livraison";
+    return t;
+  }
+  function waLink(o) { return "https://wa.me/" + CONFIG.telResto + "?text=" + encodeURIComponent(summaryText(o)); }
+
+  function viewDone() {
+    var o = ui.sent;
+    return '<div class="card done"><svg class="check" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30"/><path d="M19 33 l9 9 l17 -19"/></svg>' +
+      '<h2>Dernière étape</h2><p>Votre commande ' + esc(o.code) + ' est prête. Envoyez-la au restaurant sur WhatsApp pour qu\'il la prépare.</p>' +
+      '<div class="stack"><a class="btn center" href="' + waLink(o) + '" target="_blank" rel="noopener">Envoyer sur WhatsApp</a>' +
+      '<button class="btn secondary center" data-a="new">Nouvelle commande</button></div></div>';
+  }
+
+  function render() {
+    document.getElementById("nom").textContent = CONFIG.nom;
+    document.getElementById("slogan").textContent = CONFIG.slogan;
+    document.getElementById("infos").textContent = CONFIG.livraison + " · " + CONFIG.adresse;
+    document.title = CONFIG.nom + " – Commander";
+    var app = document.getElementById("app"), bar = document.getElementById("cartbar");
+    if (ui.view === "done") { app.innerHTML = viewDone(); bar.innerHTML = ""; return; }
+    if (ui.view === "order") { app.innerHTML = viewOrder(); bar.innerHTML = ""; return; }
+    app.innerHTML = viewMenu();
+    bar.innerHTML = count() ? '<div class="in"><button class="btn" data-a="open"><span>Voir ma commande · ' + count() + (count() > 1 ? " articles" : " article") + '</span><span>' + fcfa(total()) + '</span></button></div>' : "";
+  }
+
+  /* ===== Actions ===== */
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-a]"); if (!t) return;
+    var a = t.getAttribute("data-a"), id = t.getAttribute("data-id");
+    var y = window.scrollY;
+    if (a === "plus") { cart[id] = (cart[id] || 0) + 1; render(); window.scrollTo(0, y); return; }
+    if (a === "minus") {
+      cart[id] = (cart[id] || 0) - 1; if (cart[id] <= 0) delete cart[id];
+      if (!count() && ui.view === "order") ui.view = "menu";
+      render(); window.scrollTo(0, y); return;
+    }
+    if (a === "open") { ui.view = "order"; ui.error = ""; render(); window.scrollTo(0, 0); return; }
+    if (a === "back") { ui.view = "menu"; render(); window.scrollTo(0, 0); return; }
+    if (a === "pay") { ui.pay = t.getAttribute("data-p"); ui.error = ""; render(); window.scrollTo(0, y); return; }
+    if (a === "copy") {
+      try { navigator.clipboard.writeText(CONFIG.paiementNumero.replace(/\s/g, "")); t.textContent = "Copié"; } catch (err) { t.textContent = "Copiez à la main"; }
+      return;
+    }
+    if (a === "new") { cart = {}; ui.view = "menu"; ui.sent = null; cust.ref = ""; render(); window.scrollTo(0, 0); return; }
+    if (a === "send") {
+      var err = "";
+      if (cust.nom.trim().length < 2) err = "Entrez votre nom.";
+      else if (cust.tel.replace(/\D/g, "").length < 8) err = "Entrez un numéro de téléphone valide (8 chiffres).";
+      else if (cust.adresse.trim().length < 3) err = "Entrez votre adresse de livraison.";
+      else if (ui.pay === "momo" && cust.ref.trim().length < 4) err = "Entrez la référence de la transaction reçue par SMS.";
+      if (err) { ui.error = err; render(); window.scrollTo(0, y); return; }
+      var lignes = [];
+      for (var k in cart) { var m = find(k); if (m) lignes.push({ id: m.id, nom: m.nom, qte: cart[k], prix: m.prix }); }
+      var o = { code: "CT-" + String(Date.now()).slice(-5), lignes: lignes, total: total(), nom: cust.nom.trim(), tel: cust.tel.trim(), adresse: cust.adresse.trim(), paiement: ui.pay, ref: ui.pay === "momo" ? cust.ref.trim() : "", date: new Date().toISOString() };
+      saveCust();
+      if (CONFIG.webhookUrl) {
+        try { fetch(CONFIG.webhookUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(o) }); } catch (e2) {}
+      }
+      ui.sent = o; ui.view = "done"; render(); window.scrollTo(0, 0);
+    }
+  });
+
+  document.addEventListener("input", function (e) {
+    var el = e.target;
+    if (el.id === "f-nom") cust.nom = el.value;
+    else if (el.id === "f-tel") cust.tel = el.value;
+    else if (el.id === "f-adr") cust.adresse = el.value;
+    else if (el.id === "f-ref") cust.ref = el.value;
+  });
+
+  render();
+  if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }
+})();
+</script>
+</body>
+</html>
